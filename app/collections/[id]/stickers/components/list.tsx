@@ -27,26 +27,26 @@ import {
   Image,
   Chip,
   Progress,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
   Tooltip,
+  Skeleton,
+  Card,
 } from "@nextui-org/react";
 import GridContent from "@/components/girdContent";
 import { useStikerStore } from "../store/sticker_store";
 import { trpc } from "@/server/client";
 import { useCollectionStore } from "@/app/collections/store/collection_store";
 import { useUserStore } from "@/app/home/store/user-store";
-import { div } from "framer-motion/client";
 import { notifyError, notifySuccess } from "@/components/toast";
 import { ToastContainer } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { backgroundRemoval } from "@cloudinary/url-gen/actions/effect";
-import fs from "node:fs";
+import { removeBackground } from "@imgly/background-removal";
+import useRmBgTimer from "@/utils/hooks/useRmBgTimer";
+import { ImageViewer, ImageViewerAll } from "./imageViewer";
 
 export default function StickersList({ collectionId }: any) {
   // *********store state************************
   const router = useRouter();
+  const { seconds, isRunning, startTimer, stopTimer } = useRmBgTimer();
   const setUser = useUserStore((state) => state.setUser);
   const setCurrentSticker = useStikerStore((state) => state.setCurrentSticker);
   const currentSticker = useStikerStore((state) => state.currentSticker);
@@ -77,14 +77,22 @@ export default function StickersList({ collectionId }: any) {
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
-  const [isRbLoading, setIsRbLoading] = useState(false);
+  const [isRbLoading, setIsRbLoading] = useState({
+    firstMethod: false,
+    secondMethod: false,
+  });
 
   const [isActionSticker, setIsActionSticker] = useState("");
   const [whitchImageSelected, setWhitchImageSelected] = useState("original");
 
   const [tempImage, setTempImage] = useState<string | ArrayBuffer | null>(null);
   const [selectedImage, setSelectedImage] = useState<any>(null);
-  const [selecteBlobdImage, setSelecteBlobdImage] = useState(null);
+  const [selecteBlobdImage, setSelecteBlobdImage] = useState<
+    string | ArrayBuffer | null
+  >(null);
+  const [tempsBlobdImage, setTempsBlobdImage] = useState<
+    string | ArrayBuffer | null
+  >(null);
   const [editedImage, setEditedImage] = useState<string | ArrayBuffer | null>(
     null
   );
@@ -98,6 +106,8 @@ export default function StickersList({ collectionId }: any) {
   });
 
   const [stickerId, setStickerId] = useState("");
+  const [removeBgProgress, setRemoveBgProgress] = useState("");
+  const [processValue, setprocessValue] = useState(0);
 
   // *********api state************************
   const getCollectionById = trpc.collection.getCollectionById.useMutation();
@@ -117,7 +127,7 @@ export default function StickersList({ collectionId }: any) {
   // Fonction pour gérer la sélection de l'image
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file: any = event.target.files?.[0];
-    setSelecteBlobdImage(file);
+    setTempsBlobdImage(file);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -240,13 +250,14 @@ export default function StickersList({ collectionId }: any) {
       setIsDeleteLoading(false);
       onOpenDeleteChange();
       notifySuccess(`Sticker deleted successfully`);
+      resetStudio();
     } catch (error) {
       setIsDeleteLoading(false);
       notifyError("Failed to delete sticker");
     }
   };
 
-  async function removeBg(image: any) {
+  async function removeBgFirstMethod(image: any) {
     const formData = new FormData();
     formData.append("size", "auto");
     formData.append("image_file", image, image.name);
@@ -267,21 +278,57 @@ export default function StickersList({ collectionId }: any) {
       });
   }
 
-  const handleRemoveBgImage = async () => {
-    setIsRbLoading(true);
-    try {
-      const result = await removeBg(selecteBlobdImage);
-      notifySuccess(`SBackground removed successfully`);
-      setIsRbLoading(false);
-    } catch (error) {
-      notifyError("Failed to remove background");
-      setIsRbLoading(false);
-      console.log(error);
+  async function removeBgSecondMethod(image: any) {
+    startTimer();
+    notifySuccess(`training in progress...`);
+    const imageBlob = await removeBackground(selecteBlobdImage!, {
+      debug: true,
+      progress: (key: string, current: number, total: number) => {
+        console.log(`Processing: ${key}: ${current}/${total}`);
+        const [type, subtype] = key.split(":");
+        setRemoveBgProgress(
+          `${type} ${subtype} ${((current / total) * 100).toFixed(0)}%`
+        );
+        setprocessValue((current / total) * 100);
+      },
+    });
+    stopTimer();
+    return imageBlob;
+  }
+
+  const handleRemoveBgImage = async (method: string) => {
+    if (method === "first") {
+      try {
+        setIsRbLoading({ firstMethod: true, secondMethod: false });
+        const result = await removeBgFirstMethod(selecteBlobdImage);
+        notifySuccess(`SBackground removed successfully`);
+        setIsRbLoading({ firstMethod: false, secondMethod: false });
+        toggleSelectedImage("edited");
+      } catch (error) {
+        notifyError("Failed to remove background");
+        setIsRbLoading({ firstMethod: false, secondMethod: false });
+      }
+    } else {
+      try {
+        setIsRbLoading({ firstMethod: false, secondMethod: true });
+        const reader = new FileReader();
+        const result = await removeBgSecondMethod(selecteBlobdImage);
+        notifySuccess(`Background removed successfully`);
+        setIsRbLoading({ firstMethod: false, secondMethod: false });
+        reader.onloadend = () => setEditedImage(reader.result);
+        reader.readAsDataURL(result);
+        toggleSelectedImage("edited");
+      } catch (error) {
+        notifyError("Failed to remove background");
+        setIsRbLoading({ firstMethod: false, secondMethod: false });
+      }
     }
   };
 
   const getSelectedImage = () => {
     setSelectedImage(tempImage);
+    setSelecteBlobdImage(tempsBlobdImage);
+    setTempImage(null);
     opentModal();
   };
 
@@ -289,26 +336,46 @@ export default function StickersList({ collectionId }: any) {
     onOpenChange();
   };
 
+  const decodeBase64ToBlob = (image: string) => {
+    const base64Data = image.split(",")[1]; // extraire la chaîne de base64
+    const binaryData = atob(base64Data); // décoder la chaîne de base64
+    const blob: any = new Blob([binaryData], { type: "image/jpeg" });
+    setSelecteBlobdImage(blob);
+    return;
+  };
+
   const toggleSelectedImage = (type: string) => {
     setWhitchImageSelected(type);
+  };
+
+  const onUploadImage = () => {
+    setEditedImage(null);
+    toggleSelectedImage("original");
+    setRemoveBgProgress("");
+    setprocessValue(0);
+    onOpenChange();
   };
 
   const resetStudio = () => {
     setSelectedImage(null);
     setTempImage(null);
     setEditedImage(null);
+    setSelecteBlobdImage(null);
     setFormData({ name: "" });
     setStickerId("");
     setIsActionSticker("");
+    setRemoveBgProgress("");
+    setprocessValue(0);
+    toggleSelectedImage("original");
   };
 
-  const onSelectStickerAction = (sticker: any, action: string) => {
+  const onSelectStickerAction = (action: string, sticker?: any) => {
     if (action === "delete") {
-      setStickerId(sticker.id);
       setIsActionSticker(action);
       onOpenDeleteChange();
     }
     if (action === "edit") {
+      decodeBase64ToBlob(sticker.imageUrl);
       setStickerId(sticker.id);
       setCurrentSticker(sticker);
       setSelectedImage(sticker.imageUrl);
@@ -427,6 +494,12 @@ export default function StickersList({ collectionId }: any) {
                 </Button>
                 <Button
                   onPress={onOpenDeleteChange}
+                  isDisabled={
+                    isRbLoading.firstMethod ||
+                    isRbLoading.secondMethod ||
+                    isSaveLoading ||
+                    isUpdateLoading
+                  }
                   color="danger"
                   className="w-full"
                   endContent={<Trash2 />}
@@ -466,21 +539,47 @@ export default function StickersList({ collectionId }: any) {
             )}
             {selectedImage && (
               <div className="flex flex-col justify-center gap-2">
-                <Image
-                  className="my-2 mx-auto"
-                  src={
-                    whitchImageSelected === "original"
-                      ? selectedImage?.toString()
-                      : editedImage?.toString()
+                <ImageViewer
+                  isProcessing={
+                    isRbLoading.firstMethod || isRbLoading.secondMethod
                   }
-                  width={300}
-                  height={300}
-                  alt="selected image"
+                  images={
+                    whitchImageSelected === "original"
+                      ? [selectedImage]
+                      : [editedImage]
+                  }
+                  customClass={
+                    isRbLoading.firstMethod || isRbLoading.secondMethod
+                      ? ""
+                      : "cursor-pointer"
+                  }
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  brightness={
+                    isRbLoading.firstMethod || isRbLoading.secondMethod
+                      ? "brightness(40%)"
+                      : "brightness(100%)"
+                  }
+                  initialIndex={0}
                 />
                 {isActionSticker === "edit" && (
                   <span className="text-primary text-md text-center">
                     name : {currentSticker?.name}
                   </span>
+                )}
+                {removeBgProgress !== "" && (
+                  <div className="flex flex-col justify-center gap-2">
+                    <span className="text-withe text-md text-center">
+                      Process : {removeBgProgress}
+                    </span>
+                    <Progress
+                      aria-label="Downloading..."
+                      size="md"
+                      value={processValue}
+                      color="primary"
+                      showValueLabel={true}
+                      className="w-full"
+                    />
+                  </div>
                 )}
               </div>
             )}
@@ -520,15 +619,40 @@ export default function StickersList({ collectionId }: any) {
                   <Button
                     isIconOnly
                     size="lg"
-                    color="danger"
+                    color="secondary"
                     aria-label="reset"
                     className="w-16 h-16"
                     onPress={resetStudio}
+                    isDisabled={
+                      isRbLoading.firstMethod ||
+                      isRbLoading.secondMethod ||
+                      isSaveLoading
+                    }
                   >
                     <RefreshCcw size={22} />
                   </Button>
                 </Tooltip>
               </div>
+              {isActionSticker === "edit" && (
+                <div>
+                  <Tooltip
+                    color="danger"
+                    showArrow={true}
+                    content="Delete sticker"
+                  >
+                    <Button
+                      isIconOnly
+                      size="lg"
+                      color="danger"
+                      aria-label="reset"
+                      className="w-16 h-16"
+                      onPress={() => onSelectStickerAction("delete")}
+                    >
+                      <Trash2 size={22} />
+                    </Button>
+                  </Tooltip>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -550,29 +674,58 @@ export default function StickersList({ collectionId }: any) {
                 />
               </div>
               <div>
+                <span className="text-sm text-slate-400">
+                  Remove background
+                </span>
                 <Button
-                  onPress={handleRemoveBgImage}
+                  onPress={() => handleRemoveBgImage("first")}
                   color="secondary"
+                  size="sm"
                   isDisabled={
                     isSaveLoading ||
                     isUpdateLoading ||
                     !selectedImage ||
-                    isRbLoading ||
+                    isRbLoading.firstMethod ||
+                    isRbLoading.secondMethod ||
                     whitchImageSelected === "edited"
                   }
-                  isLoading={isRbLoading}
-                  className="w-full"
+                  isLoading={isRbLoading.firstMethod}
+                  className="w-full mb-1"
                   endContent={<Eraser />}
                 >
-                  Remove background
+                  First method
+                </Button>
+                <Button
+                  onPress={() => handleRemoveBgImage("second")}
+                  color="secondary"
+                  size="sm"
+                  isDisabled={
+                    isSaveLoading ||
+                    isUpdateLoading ||
+                    !selectedImage ||
+                    isRbLoading.secondMethod ||
+                    isRbLoading.firstMethod ||
+                    whitchImageSelected === "edited"
+                  }
+                  isLoading={isRbLoading.secondMethod}
+                  className="w-full mb-1"
+                  endContent={<Eraser />}
+                >
+                  Second method
                 </Button>
               </div>
             </div>
             <div className="flex justify-between gap-3 mt-2">
               <Button
-                onPress={onOpenChange}
+                onPress={onUploadImage}
                 color="secondary"
-                isDisabled={isSaveLoading || isUpdateLoading}
+                isDisabled={
+                  isSaveLoading ||
+                  isUpdateLoading ||
+                  isRbLoading.firstMethod ||
+                  isRbLoading.secondMethod ||
+                  isUpdateLoading
+                }
                 className="w-full"
                 endContent={<ArrowUpToLine />}
               >
@@ -580,7 +733,12 @@ export default function StickersList({ collectionId }: any) {
               </Button>
               {isActionSticker === "edit" ? (
                 <Button
-                  isDisabled={formData.name === "" || !selectedImage}
+                  isDisabled={
+                    formData.name === "" ||
+                    !selectedImage ||
+                    isRbLoading.firstMethod ||
+                    isRbLoading.secondMethod
+                  }
                   isLoading={isUpdateLoading}
                   color="warning"
                   onPress={handleUpdateStickerSubmit}
@@ -591,7 +749,12 @@ export default function StickersList({ collectionId }: any) {
                 </Button>
               ) : (
                 <Button
-                  isDisabled={formData.name === "" || !selectedImage}
+                  isDisabled={
+                    formData.name === "" ||
+                    !selectedImage ||
+                    isRbLoading.firstMethod ||
+                    isRbLoading.secondMethod
+                  }
                   isLoading={isSaveLoading}
                   onPress={handleSaveSticker}
                   color="primary"
@@ -612,7 +775,7 @@ export default function StickersList({ collectionId }: any) {
         textBtn="New sticker"
         subTitle="You'll find a list of all your stickers. Select one to edit sticker."
         refreshFn={refetch}
-        openModal={opentModal}
+        openModal={onUploadImage}
         noDataTitle="No sticker found"
         noDataSubTitle="Create a new sticker to get started"
       >
@@ -647,7 +810,7 @@ export default function StickersList({ collectionId }: any) {
               </ModalHeader>
               <ModalBody>
                 <div className="mx-10">
-                  <div className="flex justify-center items-center rounded-lg border border-dashed">
+                  <div className="flex p-2 justify-center items-center rounded-lg border border-dashed">
                     {!tempImage && (
                       <div className="flex flex-col items-center gap-2 my-10 text-primary">
                         <ImageIcon size={50} />
@@ -657,10 +820,9 @@ export default function StickersList({ collectionId }: any) {
                     {tempImage && (
                       <div>
                         <Image
-                          className="m-10 mx-auto"
+                          className="object-cover"
                           src={tempImage?.toString()}
-                          width={200}
-                          height={200}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           alt="temp image"
                         />
                       </div>
@@ -689,7 +851,7 @@ export default function StickersList({ collectionId }: any) {
                       type="file"
                       id="doc"
                       name="doc"
-                      accept="png, jpg"
+                      accept="image/png, image/jpeg, image/webp, image/tiff"
                       onChange={handleImageChange}
                       hidden
                     />
@@ -781,7 +943,7 @@ export default function StickersList({ collectionId }: any) {
         </ModalContent>
       </Modal>
 
-      {/* <Delete collection Modal /> */}
+      {/* <Delete sticker/collection Modal /> */}
       <Modal
         isDismissable={false}
         isOpen={isOpenDelete}
@@ -800,7 +962,9 @@ export default function StickersList({ collectionId }: any) {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1 text-primary">
-                Delete collection
+                {isActionSticker !== "delete"
+                  ? "Delete collection"
+                  : "Delete sticker"}
               </ModalHeader>
               <ModalBody>
                 <div className="text-center flex flex-col gap-2 p-2 justify-center items-center">
@@ -863,70 +1027,31 @@ const StckerItem = ({
   return (
     <>
       {items.map((item: any) => (
-        <div
-          key={item.id}
-          className="h-44  flex justify-center items-center rounded-lg bg-pureBackground border border-primary-200 hover:border-none hover:bg-lightBackground transform hover:translate-y-[-10px] duration-500 ease-in-out"
-        >
-          <Popover
-            showArrow
-            backdrop="opaque"
-            placement="top"
-            offset={10}
-            classNames={{
-              base: [
-                // arrow color
-                "before:bg-default-200",
-              ],
-              content: [
-                "py-3 px-4 border border-default-200",
-                "bg-gradient-to-br from-lightBackground to-black",
-              ],
-            }}
-          >
-            <PopoverTrigger>
+        <div key={item.id}>
+          <Tooltip showArrow={true} content={item.name} offset={20}>
+            <div className="h-44 py-2 flex justify-center items-center rounded-lg bg-pureBackground border border-primary-200 hover:border-none hover:bg-lightBackground transform hover:translate-y-[-10px] duration-500 ease-in-out">
               <Image
                 alt="Card background"
-                className="object-cover rounded-lg"
+                className="object-cover rounded-lg cursor-pointer"
                 src={item.imageUrl}
                 width={150}
                 height={150}
+                onClick={() => onSelectStickerAction("edit", item)}
               />
-            </PopoverTrigger>
-            <PopoverContent>
-              {(titleProps) => (
-                <div className="px-1 py-2 text-white">
-                  <h3 className="text-small font-bold" {...titleProps}>
-                    Sticker actions
-                  </h3>
-                  <div className="text-tiny">
-                    List of actions you can perform
-                  </div>
-                  <div className="flex gap-2 mt-1 items-center">
-                    <Button
-                      size="sm"
-                      isIconOnly
-                      color="secondary"
-                      aria-label="edit"
-                      onPress={() => onSelectStickerAction(item, "edit")}
-                    >
-                      <Edit2 size={18} />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      color="danger"
-                      aria-label="delete"
-                      onPress={() => onSelectStickerAction(item, "delete")}
-                    >
-                      <Trash2 size={18} />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
+            </div>
+          </Tooltip>
         </div>
       ))}
     </>
+  );
+};
+
+const SkeletonSticker = () => {
+  return (
+    <Card className="w-full bg-lightBackground p-2" radius="lg">
+      <Skeleton className="rounded-lg">
+        <div className="h-64 w-72 rounded-lg bg-default-200"></div>
+      </Skeleton>
+    </Card>
   );
 };
