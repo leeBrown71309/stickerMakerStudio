@@ -4,7 +4,6 @@ import "./css/globals.css";
 import "./css/transition.css";
 import TrpcProvider from "@/components/providers/trpc_provider";
 import NextUiProviders from "@/components/providers/ui_provider";
-import SessionProviders from "@/components/providers/sessionProvider";
 import Header from "@/components/header";
 import Template from "./template";
 
