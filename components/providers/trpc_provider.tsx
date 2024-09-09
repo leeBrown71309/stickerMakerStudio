@@ -13,13 +13,14 @@ export default function TrpcProvider({
   const [queryClient] = useState(() => new QueryClient());
   const apiurls = {
     devUrl: "http://localhost:3000/api/trpc",
-    prodUrl: "https://votre-application.vercel.app/api/trpc",
+    prodUrl:
+      "https://sticker-maker-studio-ekjb2tv5n-leebrowns-projects.vercel.app/api/trpc",
   };
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: apiurls.devUrl,
+          url: apiurls.prodUrl,
           transformer: superjson,
         }),
       ],
