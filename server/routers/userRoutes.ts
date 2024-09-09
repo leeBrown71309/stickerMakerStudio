@@ -5,7 +5,9 @@
  */
 import { z } from "zod";
 import { procedure, router } from "../trpc";
-import { prisma } from "../prisma";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const userRouter = router({
   getUser: procedure.input(z.string()).query(async ({ input: id }) => {
