@@ -43,7 +43,6 @@ export default function CollectionsList({ className, ...props }: any) {
   const setCollections = useCollectionStore((state) => state.setCollections);
   const CollectionsList = useCollectionStore((state) => state.collectionList);
   const setUser = useUserStore((state) => state.setUser);
-  const userLocalData = localStorage.getItem("user");
   const [userId, setUserId] = useState("");
   const [formData, setFormData] = useState({ name: "", tag: "" });
   const [isAddLoading, setIsAddLoading] = useState(false);
@@ -102,6 +101,8 @@ export default function CollectionsList({ className, ...props }: any) {
   };
 
   useEffect(() => {
+    const userLocalData = localStorage.getItem("user");
+
     if (userLocalData) {
       const user: any = JSON.parse(userLocalData);
       setUser(user);
