@@ -11,11 +11,15 @@ export default function TrpcProvider({
   children: React.ReactNode;
 }) {
   const [queryClient] = useState(() => new QueryClient());
+  const apiurls = {
+    devUrl: "http://localhost:3000/api/trpc",
+    prodUrl: "https://votre-application.vercel.app/api/trpc",
+  };
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: "http://localhost:3000/api/trpc",
+          url: apiurls.prodUrl,
           transformer: superjson,
         }),
       ],
