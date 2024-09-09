@@ -11,12 +11,12 @@ datasource db {
 }
 
 model User {
-  id         String       @id @default(uuid())
+  id         String       @id @default(cuid())
   fullname   String
   email      String       @unique
+  Collection Collection[]
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
-  Collection Collection[]
 }
 
 model Collection {
@@ -25,7 +25,7 @@ model Collection {
   tag       String?
   stickers  Sticker[]
   userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

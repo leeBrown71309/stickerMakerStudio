@@ -1,12 +1,16 @@
+/* eslint-disable @next/next/no-async-client-component */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+import { useSession } from "next-auth/react";
 import { useUserStore } from "../home/store/user-store";
 import CollectionsList from "./components/list";
-
+import BreadcrumbsComponent from "@/components/breadcrumbs";
 export default function Collections() {
   const user = useUserStore((state) => state.user);
   return (
     <>
+      <BreadcrumbsComponent />
+
       <div className="mt-20 text-center mx-auto text-4xl md:text-5xl lg:text-6xl font-semibold text-primary-200 ">
         <div className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-gradient-start to-gradient-end">
           Welcome {user?.fullname}

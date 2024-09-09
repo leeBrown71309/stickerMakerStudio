@@ -47,6 +47,12 @@ export default function CollectionsList({ className, ...props }: any) {
   const [userId, setUserId] = useState("");
   const [formData, setFormData] = useState({ name: "", tag: "" });
   const [isAddLoading, setIsAddLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const itemPerPage = 9;
+  const startIndex = (page - 1) * itemPerPage;
+  const endIndex = startIndex + itemPerPage;
+  const [currentPageData, setCurrentPageData] = useState();
 
   const { data, error, isLoading, refetch }: any =
     trpc.collection.getCollections.useQuery(userId, {
@@ -56,6 +62,10 @@ export default function CollectionsList({ className, ...props }: any) {
 
   // État pour les éléments de la grille
   const [items, setItems]: any = useState([]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   const opentModal = () => {
     onOpenChange();
@@ -104,8 +114,18 @@ export default function CollectionsList({ className, ...props }: any) {
     if (!isLoading && data) {
       setItems(data);
       setCollections(data);
+      setCurrentPageData(items.slice(startIndex, endIndex));
+      setTotalPages(Math.ceil(items.length / itemPerPage));
     }
-  }, [isLoading, data]);
+  }, [isLoading, data, items]);
+
+  useEffect(() => {
+    const startIndex = (page - 1) * itemPerPage;
+    const endIndex = startIndex + itemPerPage;
+    const currentPageData = items.slice(startIndex, endIndex);
+    // Mettre à jour la valeur de currentPageData
+    setCurrentPageData(currentPageData);
+  }, [page]);
 
   useEffect(() => {
     refetch();
@@ -124,17 +144,32 @@ export default function CollectionsList({ className, ...props }: any) {
       </div>
       <GridContent
         className="mt-16 mx-10 sm:mx-16 md:mx-20 lg:mx-36"
-        data={items}
+        data={currentPageData}
         title="Collections"
         textBtn="New collection"
         subTitle="You'll find a list of all your collections. Select one to manage add new stickers."
         refreshFn={refetch}
         openModal={opentModal}
         isLoading={isLoading}
+        paginationComponent={
+          <div className="flex justify-center mb-5 p-4 mx-3 rounded-xl border border-slate-600 overflow-auto">
+            <Pagination
+              loop
+              showControls
+              total={totalPages}
+              initialPage={page}
+              color="primary"
+              onChange={handlePageChange}
+            />
+          </div>
+        }
         noDataTitle="No collections yet"
         noDataSubTitle="Create a collection to get started"
       >
-        <CardItems items={items} onCardClick={getStickersCollection} />
+        <CardItems
+          items={currentPageData}
+          onCardClick={getStickersCollection}
+        />
       </GridContent>
       <div className="h-16"></div>
 
@@ -225,7 +260,7 @@ const CardItems = ({
   };
   return (
     <>
-      {items.slice(0, 9).map((item: any) => (
+      {items.map((item: any) => (
         <Card
           key={item.id}
           isPressable
@@ -238,7 +273,9 @@ const CardItems = ({
               {item.stickers.length} Stickers-
               {item.tag !== "" ? item.tag : "No Tag"}
             </small>
-            <h4 className="font-bold text-large">{item.name}</h4>
+            <p className="h4 w-full font-bold text-large text-start truncate overflow-hidden whitespace-nowrap text-ellipsis">
+              {item.name}
+            </p>
           </CardHeader>
           <CardBody className="flex justify-center overflow-visible">
             <Image

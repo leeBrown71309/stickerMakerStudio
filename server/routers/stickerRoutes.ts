@@ -5,9 +5,7 @@
  */
 import { z } from "zod";
 import { procedure, router } from "../trpc";
-import { Prisma, PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../prisma";
 
 export const stickerRouter = router({
   getStickers: procedure

@@ -3,6 +3,7 @@
 import { RefreshCw, Plus } from "lucide-react";
 import { Button, CircularProgress, Pagination } from "@nextui-org/react";
 import EmptyData from "@/components/emptyData";
+import { useState } from "react";
 
 export default function GridContent({
   children,
@@ -16,6 +17,7 @@ export default function GridContent({
   noDataTitle,
   noDataSubTitle,
   isLoading,
+  paginationComponent,
   ...props
 }: any) {
   return (
@@ -26,8 +28,9 @@ export default function GridContent({
             <span className="text-md ml-3">{title}</span>
             <Button
               onPress={refreshFn}
-              className="mr-3 bg-primary-200 text-primary"
+              className="mr-3 "
               endContent={<RefreshCw />}
+              color="secondary"
             >
               Refresh
             </Button>
@@ -47,7 +50,7 @@ export default function GridContent({
           )}
 
           {/* Affichage des donées si la grille n'est pas vide */}
-          {!isLoading && data.length > 0 && (
+          {!isLoading && data && data.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-3 px-3 py-3 mt-5">
               {/* Bouton pour ajouter un nouvel élément */}
               <div
@@ -65,20 +68,10 @@ export default function GridContent({
             </div>
           )}
 
-          {!isLoading && data.length > 8 && (
-            <div className="flex justify-center mb-5 p-4 mx-3 rounded-xl border border-slate-600 overflow-auto">
-              <Pagination
-                loop
-                showControls
-                total={data.length}
-                initialPage={1}
-                color="primary"
-              />
-            </div>
-          )}
+          {!isLoading && data && data.length > 0 && paginationComponent}
 
           {/* Affichage des éléments vides si la grille est vide */}
-          {!isLoading && data.length === 0 && (
+          {!isLoading && data && data.length === 0 && (
             <EmptyData title={noDataTitle} subTitle={noDataSubTitle} />
           )}
         </div>

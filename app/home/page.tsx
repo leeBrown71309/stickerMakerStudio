@@ -24,6 +24,7 @@ import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useUserStore } from "./store/user-store";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function Home() {
   const router = useRouter();
@@ -227,30 +228,22 @@ export default function Home() {
                   variant="bordered"
                   className="text-white focus:border-primary"
                 />
-
-                <div className="flex py-2 px-1 justify-between text-primary">
-                  <Checkbox
-                    classNames={{
-                      label: "text-small text-primary",
-                    }}
-                  >
-                    Remember me
-                  </Checkbox>
-                </div>
               </ModalBody>
-              <ModalFooter>
+              <ModalFooter className="flex flex-col justify-center">
                 <Button
-                  className="bg-white text-black"
-                  variant="flat"
-                  onPress={onClose}
-                  isDisabled={isAddLoading}
+                  onPress={() => signIn("google")}
+                  isLoading={isAddLoading}
+                  isDisabled
+                  className="w-full bg-white text-black hover:bg-slate-100"
                 >
-                  Close
+                  Connect with Google
                 </Button>
                 <Button
                   color="primary"
                   onPress={handleSubmit}
                   isLoading={isAddLoading}
+                  isDisabled={formData.email === "" || formData.fullname === ""}
+                  className="w-full"
                 >
                   Submit
                 </Button>

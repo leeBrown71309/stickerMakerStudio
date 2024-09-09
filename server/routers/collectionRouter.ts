@@ -5,10 +5,7 @@
  */
 import { z } from "zod";
 import { procedure, router } from "../trpc";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
-
-const prisma = new PrismaClient();
+import { prisma } from "../prisma";
 
 export const collectionRouter = router({
   getCollections: procedure
