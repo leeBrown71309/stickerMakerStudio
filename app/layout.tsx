@@ -6,6 +6,7 @@ import TrpcProvider from "@/components/providers/trpc_provider";
 import NextUiProviders from "@/components/providers/ui_provider";
 import Header from "@/components/header";
 import Template from "./template";
+import Footer from "@/components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
               <main className="pink-dark text-foreground bg-background min-h-screen">
                 <Header />
                 {children}
+                <Footer />
               </main>
             </Template>
           </NextUiProviders>

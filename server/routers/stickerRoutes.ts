@@ -28,7 +28,7 @@ export const stickerRouter = router({
       z.object({
         name: z.string(),
         imageUrl: z.string(),
-        collectionId: z.string().uuid(),
+        collectionId: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -50,7 +50,7 @@ export const stickerRouter = router({
         id: z.string(),
         name: z.string(),
         imageUrl: z.string(),
-        collectionId: z.string().uuid(),
+        collectionId: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -73,7 +73,7 @@ export const stickerRouter = router({
     .input(
       z.object({
         id: z.string(),
-        collectionId: z.string().uuid(),
+        collectionId: z.string(),
       })
     )
     .mutation(async ({ input }) => {

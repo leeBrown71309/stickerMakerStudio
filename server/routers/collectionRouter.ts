@@ -28,7 +28,7 @@ export const collectionRouter = router({
     .input(
       z.object({
         id: z.string(),
-        userId: z.string().uuid(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -52,7 +52,7 @@ export const collectionRouter = router({
       z.object({
         name: z.string(),
         tag: z.string(),
-        userId: z.string().uuid(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -71,8 +71,8 @@ export const collectionRouter = router({
   updateCollection: procedure
     .input(
       z.object({
-        id: z.string().uuid(),
-        userId: z.string().uuid(),
+        id: z.string(),
+        userId: z.string(),
         name: z.string(),
         tag: z.string(),
       })
@@ -97,8 +97,8 @@ export const collectionRouter = router({
   deleteCollection: procedure
     .input(
       z.object({
-        id: z.string().uuid(),
-        userId: z.string().uuid(),
+        id: z.string(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ input }) => {

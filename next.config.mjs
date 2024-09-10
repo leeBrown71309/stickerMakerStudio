@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/api/trpc/:path*",
+  //       destination:
+  //         "https://sticker-maker-studio-ekjb2tv5n-leebrowns-projects.vercel.app/api/trpc/:path*",
+  //     },
+  //   ];
+  // },
   async redirects() {
     return [
       {

@@ -11,16 +11,32 @@ export default function TrpcProvider({
   children: React.ReactNode;
 }) {
   const [queryClient] = useState(() => new QueryClient());
-  const apiurls = {
-    devUrl: "http://localhost:3000/api/trpc",
-    prodUrl:
-      "https://sticker-maker-studio-ekjb2tv5n-leebrowns-projects.vercel.app/api/trpc",
-  };
+  function getBaseUrl() {
+    if (typeof window !== "undefined")
+      // browser should use relative path
+      return "";
+    // if (process.env.VERCEL_URL)
+    //   // reference for vercel.com
+    //   return `https://${process.env.VERCEL_URL}`;
+    // if (process.env.RENDER_INTERNAL_HOSTNAME)
+    //   // reference for render.com
+    //   return `http://${process.env.RENDER_INTERNAL_HOSTNAME}:${process.env.PORT}`;
+    // if (process.env.NETLIFY_SITE_URL)
+    //   // reference for netlify.com
+    //   return `${process.env.NETLIFY_SITE_URL}`;
+    // assume localhost
+    return `${process.env.API_URL}`;
+  }
+
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
+<<<<<<< HEAD
           url: apiurls.prodUrl,
+=======
+          url: `${getBaseUrl()}/api/trpc`,
+>>>>>>> dev
           transformer: superjson,
         }),
       ],
