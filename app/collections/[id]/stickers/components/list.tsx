@@ -306,19 +306,23 @@ export default function StickersList({ collectionId }: any) {
 
   async function removeBgSecondMethod(image: any) {
     startTimer();
-    notifySuccess(`training in progress...`);
-    const imageBlob = await removeBackground(image!, {
-      debug: false,
-      progress: (key: string, current: number, total: number) => {
-        const [type, subtype] = key.split(":");
-        setRemoveBgProgress(
-          `${type} ${subtype} ${((current / total) * 100).toFixed(0)}%`
-        );
-        setprocessValue((current / total) * 100);
-      },
-    });
-    stopTimer();
-    return imageBlob;
+    try {
+      notifySuccess(`training in progress...`);
+      const imageBlob = await removeBackground(image!, {
+        debug: false,
+        progress: (key: string, current: number, total: number) => {
+          const [type, subtype] = key.split(":");
+          setRemoveBgProgress(
+            `${type} ${subtype} ${((current / total) * 100).toFixed(0)}%`
+          );
+          setprocessValue((current / total) * 100);
+        },
+      });
+      stopTimer();
+      return imageBlob;
+    } catch (error) {
+      alert(error);
+    }
   }
 
   const handleRemoveBgImage = async (method: string) => {
@@ -341,7 +345,7 @@ export default function StickersList({ collectionId }: any) {
         notifySuccess(`Background removed successfully`);
         setIsRbLoading({ firstMethod: false, secondMethod: false });
         reader.onloadend = () => setEditedImage(reader.result);
-        reader.readAsDataURL(result);
+        reader.readAsDataURL(result!);
         toggleSelectedImage("edited");
       } catch (error) {
         notifyError("Failed to remove background");
