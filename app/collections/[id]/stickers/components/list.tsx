@@ -518,120 +518,125 @@ export default function StickersList({ collectionId }: any) {
     <>
       <ToastContainer />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-1 mt-5 mx-10 sm:mx-16 md:mx-20 lg:mx-24">
-        {currentCollection && (
-          <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 w-full p-3 rounded-lg bg-pureBackground flex flex-col gap-2 items-start">
+        {currentCollection ? (
+          <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 w-full p-3 flex flex-col justify-start rounded-lg bg-pureBackground">
             <div>
-              <h5 className="my-2 text-md ml-3">Collection details</h5>
-            </div>
-            <div>
-              <div className="flex flex-col justify-center p-2 h-full w-full">
-                <div className="flex flex-col justify-center p-5 h-full w-full rounded-lg  border border-slate-700">
-                  <div className="flex justify-between gap-x-10 mb-2">
-                    <span>Collection : </span>
-                    <span className="text-primary">
-                      {currentCollection?.name}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-x-10 mb-2">
-                    <span>Tag : </span>
-                    <Chip
-                      startContent={<Tag size={18} />}
-                      variant="faded"
-                      color="secondary"
-                    >
-                      {currentCollection?.tag !== ""
-                        ? currentCollection?.tag
-                        : "No tag"}
-                    </Chip>
-                  </div>
-
-                  <div className="flex justify-between gap-x-10 mb-2">
-                    <span>Created at : </span>
-                    <Chip
-                      startContent={<Calendar size={18} />}
-                      variant="shadow"
-                      color="secondary"
-                    >
-                      {currentCollection?.createdAt.toDateString()}
-                    </Chip>
-                  </div>
-
-                  <div className="flex justify-between gap-x-10 mb-2">
-                    <span>Updated at : </span>
-                    <Chip
-                      startContent={<Calendar size={18} />}
-                      variant="shadow"
-                      color="secondary"
-                    >
-                      {currentCollection?.updatedAt.toDateString()}
-                    </Chip>
-                  </div>
-
-                  <div className="flex justify-between gap-x-10 mb-2">
-                    <span>Stickers number : </span>
-                    <Chip
-                      startContent={<Sticker size={18} />}
-                      variant="faded"
-                      color="secondary"
-                    >
-                      {currentCollection?.stickers.length}/30
-                    </Chip>
-                  </div>
-                  {collectionSize !== "" && (
+              <div>
+                <h5 className="my-2 text-md ml-3">Collection details</h5>
+              </div>
+              <div>
+                <div className="flex flex-col justify-center p-2 h-full w-full">
+                  <div className="flex flex-col justify-center p-5 h-full w-full rounded-lg  border border-slate-700">
                     <div className="flex justify-between gap-x-10 mb-2">
-                      <span>Collection size : </span>
+                      <span>Collection : </span>
+                      <span className="text-primary">
+                        {currentCollection?.name}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-x-10 mb-2">
+                      <span>Tag : </span>
                       <Chip
-                        startContent={<FileDigit size={18} />}
+                        startContent={<Tag size={18} />}
                         variant="faded"
                         color="secondary"
                       >
-                        {collectionSize}
+                        {currentCollection?.tag !== ""
+                          ? currentCollection?.tag
+                          : "No tag"}
                       </Chip>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex justify-between gap-3 mt-2">
-                  <Button
-                    onPress={onOpenUpdateChange}
-                    color="secondary"
-                    className="w-full"
-                    endContent={<Pencil />}
-                  >
-                    Update collection
-                  </Button>
-                  <Button
-                    onPress={onOpenDeleteChange}
-                    isDisabled={
-                      isRbLoading.firstMethod ||
-                      isRbLoading.secondMethod ||
-                      isSaveLoading ||
-                      isUpdateLoading
-                    }
-                    color="danger"
-                    className="w-full"
-                    endContent={<Trash2 />}
-                  >
-                    Delete collection
-                  </Button>
+                    <div className="flex justify-between gap-x-10 mb-2">
+                      <span>Created at : </span>
+                      <Chip
+                        startContent={<Calendar size={18} />}
+                        variant="shadow"
+                        color="secondary"
+                      >
+                        {currentCollection?.createdAt.toDateString()}
+                      </Chip>
+                    </div>
+
+                    <div className="flex justify-between gap-x-10 mb-2">
+                      <span>Updated at : </span>
+                      <Chip
+                        startContent={<Calendar size={18} />}
+                        variant="shadow"
+                        color="secondary"
+                      >
+                        {currentCollection?.updatedAt.toDateString()}
+                      </Chip>
+                    </div>
+
+                    <div className="flex justify-between gap-x-10 mb-2">
+                      <span>Stickers number : </span>
+                      <Chip
+                        startContent={<Sticker size={18} />}
+                        variant="faded"
+                        color="secondary"
+                      >
+                        {currentCollection?.stickers.length}/30
+                      </Chip>
+                    </div>
+                    {collectionSize !== "" && (
+                      <div className="flex justify-between gap-x-10 mb-2">
+                        <span>Collection size : </span>
+                        <Chip
+                          startContent={<FileDigit size={18} />}
+                          variant="faded"
+                          color="secondary"
+                        >
+                          {collectionSize}
+                        </Chip>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between gap-3 mt-2">
+                    <Button
+                      onPress={onOpenUpdateChange}
+                      color="secondary"
+                      className="w-full"
+                      endContent={<Pencil />}
+                    >
+                      Update collection
+                    </Button>
+                    <Button
+                      onPress={onOpenDeleteChange}
+                      isDisabled={
+                        isRbLoading.firstMethod ||
+                        isRbLoading.secondMethod ||
+                        isSaveLoading ||
+                        isUpdateLoading
+                      }
+                      color="danger"
+                      className="w-full"
+                      endContent={<Trash2 />}
+                    >
+                      Delete collection
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
-        {!currentCollection && (
-          <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 w-full p-3 rounded-lg bg-pureBackground flex flex-col justify-center gap-2 items-start">
-            <div className="mx-auto">
-              <div className="w-full mt-2 py-5 px-20 mx-auto rounded-lg border border-slate-700">
-                <div className="flex flex-col justify-center  gap-3 text-center">
-                  <span className="text-primary">Loading data...</span>
-                  <Progress
-                    size="sm"
-                    isIndeterminate
-                    aria-label="Loading..."
-                    className="w-full"
-                  />
+        ) : (
+          <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 w-full p-3 flex flex-col justify-center rounded-lg bg-pureBackground">
+            <div className="gap-2 justify-self-center">
+              <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 w-full p-3 rounded-lg bg-pureBackground flex flex-col justify-center gap-2 items-start">
+                <div className="mx-auto">
+                  <div className="w-full mt-2 py-5 px-20 mx-auto rounded-lg border border-slate-700">
+                    <div className="flex flex-col justify-center  gap-3 text-center">
+                      <span className="text-primary">Loading data...</span>
+                      <Progress
+                        size="sm"
+                        isIndeterminate
+                        aria-label="Loading..."
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

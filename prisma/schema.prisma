@@ -20,7 +20,7 @@ model User {
 }
 
 model Collection {
-  id        String    @id @default(uuid())
+  id        String    @id @default(cuid())
   name      String
   tag       String?
   stickers  Sticker[]
@@ -31,7 +31,7 @@ model Collection {
 }
 
 model Sticker {
-  id           String     @id @default(uuid())
+  id           String     @id @default(cuid())
   name         String
   imageUrl     String
   collectionId String
