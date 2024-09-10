@@ -32,11 +32,7 @@ export default function TrpcProvider({
     trpc.createClient({
       links: [
         httpBatchLink({
-<<<<<<< HEAD
-          url: apiurls.prodUrl,
-=======
           url: `${getBaseUrl()}/api/trpc`,
->>>>>>> dev
           transformer: superjson,
         }),
       ],
