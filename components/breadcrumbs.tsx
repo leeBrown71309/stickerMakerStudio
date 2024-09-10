@@ -18,8 +18,9 @@ const breadcrumbsStyle: React.CSSProperties = {
 
 const shouldCombineNextSegment = (segment: string, nextSegment: string) => {
   // Vérifiez si le segment actuel est un UUID et si le suivant est "stickers"
-  const cuidRegex = /^[a-z0-9]+[a-z0-9][a-z0-9]+[a-z0-9]+[a-z0-9]+[a-z0-9]+$/;
-  return segment && nextSegment;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  return segment && nextSegment === "stickers";
 };
 
 const BreadcrumbsComponent = () => {
