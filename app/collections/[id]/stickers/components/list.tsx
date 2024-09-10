@@ -448,6 +448,11 @@ export default function StickersList({ collectionId }: any) {
   };
 
   const calculateTotalSize = (data: any) => {
+    if (!data || data.length === 0) {
+      setCollectionSize("0 KB");
+      return;
+    }
+
     let totalSize = 0;
 
     data.forEach((image: any) => {
