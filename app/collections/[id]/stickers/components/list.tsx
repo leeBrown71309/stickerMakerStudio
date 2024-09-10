@@ -141,12 +141,16 @@ export default function StickersList({ collectionId }: any) {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
+
+  function fileToBlob(file: File): Blob {
+    return new Blob([file], { type: file.type });
+  }
   // Fonction pour gérer la sélection de l'image
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const maxSize = 20 * 1024 * 1024;
     const file: any = event.target.files?.[0];
-    console.log("🚀 ~ handleImageChange ~ file:", file);
-    setTempsBlobdImage(file);
+    let fileBlob: any = fileToBlob(file);
+    setTempsBlobdImage(fileBlob);
     if (file && file.size > maxSize) {
       notifyError(
         `Image size should not be greater than 20 MB. Selected another image`
@@ -297,18 +301,15 @@ export default function StickersList({ collectionId }: any) {
         reader.onloadend = () => setEditedImage(reader.result);
         reader.readAsDataURL(imageBlob);
       })
-      .catch((error) => {
-        console.error(error);
-      });
+      .catch((error) => {});
   }
 
   async function removeBgSecondMethod(image: any) {
     startTimer();
     notifySuccess(`training in progress...`);
     const imageBlob = await removeBackground(image!, {
-      debug: true,
+      debug: false,
       progress: (key: string, current: number, total: number) => {
-        console.log(`Processing: ${key}: ${current}/${total}`);
         const [type, subtype] = key.split(":");
         setRemoveBgProgress(
           `${type} ${subtype} ${((current / total) * 100).toFixed(0)}%`
@@ -343,7 +344,6 @@ export default function StickersList({ collectionId }: any) {
         reader.readAsDataURL(result);
         toggleSelectedImage("edited");
       } catch (error) {
-        console.log("🚀 ~ handleRemoveBgImage ~ error:", error);
         notifyError("Failed to remove background");
         setIsRbLoading({ firstMethod: false, secondMethod: false });
       }
@@ -379,7 +379,6 @@ export default function StickersList({ collectionId }: any) {
     }
 
     const file: any = new File([uint8Array], name, { type: "image/png" });
-    console.log("🚀 ~ decodeBase64ToFile ~ file:", file);
     setSelecteBlobdImage(file);
   };
 
