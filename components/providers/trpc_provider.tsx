@@ -15,14 +15,17 @@ export default function TrpcProvider({
     if (typeof window !== "undefined")
       // browser should use relative path
       return "";
-    if (process.env.VERCEL_URL)
-      // reference for vercel.com
-      return `https://${process.env.VERCEL_URL}`;
-    if (process.env.RENDER_INTERNAL_HOSTNAME)
-      // reference for render.com
-      return `http://${process.env.RENDER_INTERNAL_HOSTNAME}:${process.env.PORT}`;
+    // if (process.env.VERCEL_URL)
+    //   // reference for vercel.com
+    //   return `https://${process.env.VERCEL_URL}`;
+    // if (process.env.RENDER_INTERNAL_HOSTNAME)
+    //   // reference for render.com
+    //   return `http://${process.env.RENDER_INTERNAL_HOSTNAME}:${process.env.PORT}`;
+    // if (process.env.NETLIFY_SITE_URL)
+    //   // reference for netlify.com
+    //   return `${process.env.NETLIFY_SITE_URL}`;
     // assume localhost
-    return `http://localhost:${process.env.PORT ?? 3000}`;
+    return `${process.env.API_URL}`;
   }
 
   const [trpcClient] = useState(() =>
