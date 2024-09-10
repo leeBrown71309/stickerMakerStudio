@@ -153,7 +153,7 @@ export default function CollectionsList({ className, ...props }: any) {
         openModal={opentModal}
         isLoading={isLoading}
         paginationComponent={
-          <div className="flex justify-center mb-5 p-4 mx-3 rounded-xl border border-slate-600 overflow-auto">
+          <div className=" flex justify-center mb-5 p-4 mx-3 rounded-xl border border-slate-600 overflow-auto">
             <Pagination
               loop
               showControls
@@ -161,6 +161,7 @@ export default function CollectionsList({ className, ...props }: any) {
               initialPage={page}
               color="primary"
               onChange={handlePageChange}
+              className="z-[10]"
             />
           </div>
         }

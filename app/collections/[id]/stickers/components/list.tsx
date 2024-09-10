@@ -47,7 +47,6 @@ import { useRouter } from "next/navigation";
 import { removeBackground } from "@imgly/background-removal";
 import useRmBgTimer from "@/utils/hooks/useRmBgTimer";
 import { ImageViewer, ImageViewerAll } from "./imageViewer";
-import BreadcrumbsComponent from "@/components/breadcrumbs";
 
 export default function StickersList({ collectionId }: any) {
   // *********store state************************
@@ -140,6 +139,13 @@ export default function StickersList({ collectionId }: any) {
   // *********action function************************
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+  };
+
+  const isMobile = () => {
+    const userAgent = navigator.userAgent;
+    const mobileRegex =
+      /Android|iOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i;
+    return mobileRegex.test(userAgent);
   };
 
   function fileToBlob(file: File): Blob {
@@ -321,6 +327,7 @@ export default function StickersList({ collectionId }: any) {
       stopTimer();
       return imageBlob;
     } catch (error) {
+      stopTimer();
       alert(error);
     }
   }
@@ -826,25 +833,28 @@ export default function StickersList({ collectionId }: any) {
                   className="mb-5"
                 />
               </div>
+
               <div>
                 <span className="text-sm text-slate-400">
                   Remove background
-                </span>
-                <Tooltip
-                  color="secondary"
-                  showArrow={true}
-                  content={
-                    <div className="px-1 py-2">
-                      <div className="text-small font-bold">Warning!!!</div>
-                      <div className="text-tiny">
-                        it's a limited method with a good result, <br />
-                        try the second method, which is free 😁👇
-                        <br />
-                        in case this one doesn't work any more.
-                      </div>
-                    </div>
-                  }
-                >
+                </span>{" "}
+                <div className="my-2">
+                  <div className="bg-secondary rounded-xl p-3 text-sm text-center">
+                    {user?.email === "bruhh_admin@admin.com" ? (
+                      <span>
+                        First method is limited with a good ad fast result,
+                        second method is free and a bit slower than first method
+                        but doesn't work on mobile devices.
+                      </span>
+                    ) : (
+                      <span>
+                        This method is free and a bit slower,also it doesn't
+                        work on mobile devices.
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {user?.email === "bruhh_admin@admin.com" && (
                   <Button
                     onPress={() => handleRemoveBgImage("first")}
                     color="secondary"
@@ -861,9 +871,9 @@ export default function StickersList({ collectionId }: any) {
                     className="w-full mb-1"
                     endContent={<Eraser />}
                   >
-                    First method
+                    Remove background
                   </Button>
-                </Tooltip>
+                )}
                 <Button
                   onPress={() => handleRemoveBgImage("second")}
                   color="secondary"
@@ -874,13 +884,14 @@ export default function StickersList({ collectionId }: any) {
                     !selectedImage ||
                     isRbLoading.secondMethod ||
                     isRbLoading.firstMethod ||
-                    whitchImageSelected === "edited"
+                    whitchImageSelected === "edited" ||
+                    isMobile()
                   }
                   isLoading={isRbLoading.secondMethod}
                   className="w-full mb-1"
                   endContent={<Eraser />}
                 >
-                  Second method
+                  Remove background
                 </Button>
               </div>
             </div>
@@ -944,8 +955,8 @@ export default function StickersList({ collectionId }: any) {
           <div className="bg-danger mx-16 lg:mx-28 rounded-xl p-3 text-center flex justify-center items-center gap-3">
             <AlertCircle size={34} />
             <span>
-              Vous avez atteind le nombre maximum de {data?.length} stickers,
-              veuillez en supprimer un ou créer une nouvelle collection.
+              You have reached the maximum number of {data?.length} stickers,
+              please delete one or create a new collection.
             </span>
           </div>
         </div>
@@ -968,6 +979,7 @@ export default function StickersList({ collectionId }: any) {
               initialPage={page}
               color="primary"
               onChange={handlePageChange}
+              className="z-[10]"
             />
           </div>
         }

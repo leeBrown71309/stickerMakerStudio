@@ -36,7 +36,7 @@ export default function GridContent({
             </Button>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center mx-5">
             <span className="text-sm text-center text-slate-600 mt-4">
               {subTitle}
             </span>
